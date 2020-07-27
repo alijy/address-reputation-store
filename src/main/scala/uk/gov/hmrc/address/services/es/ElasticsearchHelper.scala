@@ -153,11 +153,11 @@ class ElasticClientWrapper(clientList: List[ElasticClient], settings: ElasticSet
           }
         } else throw nnae
       }
-      case e => throw e
+      case e: Throwable => throw e
     }
   }
 
-  private def reinitialize: Unit = updateClients(reinitializer.reinitialize)
+  private def reinitialize(): Unit = updateClients(reinitializer.reinitialize)
 
   private def updateClients(clients: List[ElasticClient]) {
     mutable.addFirst(clients)

@@ -21,8 +21,9 @@ import org.elasticsearch.client.Client
 import org.elasticsearch.client.transport.NoNodeAvailableException
 import org.mockito.Mockito._
 import org.scalatest.{MustMatchers, WordSpec}
-import org.scalatest.mock.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.logging.SimpleLogger
+import scala.language.reflectiveCalls
 
 class ElasticClientWrapperTest extends WordSpec with MustMatchers with MockitoSugar {
 
@@ -47,25 +48,25 @@ class ElasticClientWrapperTest extends WordSpec with MustMatchers with MockitoSu
   "wrapper" should {
 
     "reinitialize" in new Scenario {
-      when(client.client)
+      when(client.java)
         .thenThrow(new NoNodeAvailableException("IP has changed!"))
-      when(reinitialized.client)
+      when(reinitialized.java)
         .thenReturn(underlying)
       val actual: Client = wrapper.withReinitialization[Client](0, 2) {
-        wrapper.clients.head.client
+        wrapper.clients.head.java
       }
       reigniter.reignited must be (true)
       actual must be (underlying)
     }
 
     "rethrow after limit reached" in new Scenario {
-      when(client.client)
+      when(client.java)
         .thenThrow(new NoNodeAvailableException("IP has changed!"))
-      when(reinitialized.client)
+      when(reinitialized.java)
         .thenThrow(new NoNodeAvailableException("Still not there!"))
       intercept[NoNodeAvailableException] {
         wrapper.withReinitialization[Client](0, 1) {
-          wrapper.clients.head.client
+          wrapper.clients.head.java
         }
       }
     }
